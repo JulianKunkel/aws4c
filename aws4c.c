@@ -2518,17 +2518,17 @@ s3_do_delete ( IOBuf *b, char * const signature,
 
 static char* __aws_sign ( char * const str, AWSContext* ctx )
 {
-  HMAC_CTX      hctx;
+  HMAC_CTX *      hctx;
   unsigned char MD[256];
   unsigned      len;
 
   __debug("StrToSign:\n%s", str );
 
-  HMAC_CTX_init(&hctx);
-  HMAC_Init(&hctx, ctx->awsKey, strlen(ctx->awsKey), EVP_sha1());
-  HMAC_Update(&hctx,(unsigned char*)str, strlen(str));
-  HMAC_Final(&hctx,(unsigned char*)MD, &len);
-  HMAC_CTX_cleanup(&hctx);
+  hctx = HMAC_CTX_new();
+  HMAC_Init_ex(hctx, ctx->awsKey, strlen(ctx->awsKey), EVP_sha1(), NULL);
+  HMAC_Update(hctx,(unsigned char*)str, strlen(str));
+  HMAC_Final(hctx,(unsigned char*)MD, &len);
+  HMAC_CTX_free(hctx);
 
   char * b64 = __b64_encode (MD, len);
   __debug("Signature:  %s", b64 );
